@@ -62,6 +62,8 @@ public class Manager {
 			mSocket.joinGroup(addr);
 
 			// 启动一个线程用于监其他对等节点广播消息
+			BroadcastReceiverThread broadcastReceiver = new BroadcastReceiverThread(mSocket, networkDispatch);
+			broadcastReceiver.start();// 用于接收其他对等结点发送的广播消息
 
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -96,6 +98,8 @@ public class Manager {
 			segmentBoradcastThread.stop();
 
 		segmentBoradcastThread = new NetworkSegmentBoradcastThread();
+
+		segmentBoradcastThread.start();// 用于定时广播该频道的名称
 
 	}
 
@@ -167,6 +171,7 @@ public class Manager {
 
 			break;
 		case ACKServiceMessage.askfor_join:
+			
 			if (curSegment == null)
 				reqSegmentName = msg.getMsgContent();
 			if (!curSegment.getName().equals(msg.getMsgContent())) {
@@ -175,15 +180,43 @@ public class Manager {
 			ACKServiceMessage ackMsg = new ACKServiceMessage(getMePeer(), ACKServiceMessage.welcome_join,
 					curSegment.getName());
 			Manager.getInsance().getNetworkDispatch().DispatchToAll(ackMsg);
-			
-			if(curSegment.)
-			
+
+			if (curSegment.getOwnerPeer().equals(getMePeer())) {
+				// 发现他是segment的创建者
+				ACKServiceMessage ackmsg = new ACKServiceMessage(getMePeer(), ACKServiceMessage.chan_owner,
+						curSegment.getName());
+
+				Manager.getInsance().getNetworkDispatch().DispatchToAll(ackmsg);
+			}
 
 			break;
 
 		case ACKServiceMessage.welcome_join:
+			if (curSegment == null && reqSegmentName.length() > 0 && reqSegmentName.equals(msg.getMsgContent())) {
+
+				curSegment = new NetworkSegment(reqSegmentName);
+
+				curSegment.addPerrNode(getMePeer());
+				//在这里有两个线层，一个是用于专门负责监听接收广播消息的线程，该线程首先接收到消息然后解密消息，然后是分发处理消息，manger的处理消息的方法就是在这个线程中执行的
+				//另外一个线程是主界面线程。在这里主界面线程有两种情况：1是密码成功，此时会由处理消息的线程主动解锁主线程，2 是密码不配，所以处理线程无法解锁只能等待。为了避免长时间的等待我们使用了带有时间的wait方法
+				synchronized (waitObject) {
+					waitObject.notify();
+				}
+
+			} else if (curSegment == null && reqSegmentName.length() < 1)
+				return;
+
+			curSegment.addPerrNode(msg.getSender());
+			reqSegmentName = "";
+
 			break;
 		case ACKServiceMessage.chan_owner:
+			if (curSegment == null || !curSegment.getName().equals(msg.getMsgContent())) {
+				return;
+			}
+
+			curSegment.setOwnerPeer(msg.getSender());
+
 			break;
 
 		case ACKServiceMessage.chan_avd:
@@ -251,6 +284,7 @@ public class Manager {
 	public static void requestJoinInNetworkSegemnt(String segmentName, String key) {
 
 		// 发送消息
+		Manager.getInsance().getNetworkDispatch().setKey(key);
 
 		// 创建要发送的消息bean
 
@@ -261,12 +295,12 @@ public class Manager {
 
 	}
 
-	private class BoradcastReceiverThread extends Thread {
+	private class BroadcastReceiverThread extends Thread {
 
 		private MulticastSocket mSocket;// 用于接收数据
 		private AbstractNetWorkDispatcher mDispatcher;// 用于解密数据
 
-		public BoradcastReceiverThread(MulticastSocket pSocket, AbstractNetWorkDispatcher pDispather) {
+		public BroadcastReceiverThread(MulticastSocket pSocket, AbstractNetWorkDispatcher pDispather) {
 			this.mSocket = pSocket;
 			this.mDispatcher = pDispather;
 		}

@@ -17,14 +17,11 @@ public class NetworkSegment {
 
 	private List<PeerNode> listPeer = new ArrayList<>();
 	private static Map<String, NetworkSegment> segmentMap = new TreeMap<String, NetworkSegment>();
-	
-	
-	public NetworkSegment(String name,Frame uiFrame){
-		this.name=name;
-		
-		
+
+	public NetworkSegment(String name) {
+		this.name = name;
+
 	}
-	
 
 	public String getName() {
 		return name;
@@ -42,12 +39,21 @@ public class NetworkSegment {
 		this.ownerPeer = ownerPeer;
 	}
 
+	public void addPerrNode(PeerNode peerNode) {
+		if (listPeer.contains(peerNode))
+			return;
+
+		this.listPeer.add(peerNode);
+	}
+
 	public static void createNetworkSegment(String segmentName, String key) {
-		NetworkSegment singleSegment = new NetworkSegment();
-		singleSegment.setOwnerPeer(Manager.getInsance().getMePeer());// 设置频道的所属peer节点。
-		singleSegment.setName(segmentName);
-		Manager.getInsance().setADThread(singleSegment);
+		NetworkSegment lsegment = new NetworkSegment(segmentName);
+		//设置该频道的密码：
+		Manager.getInsance().getNetworkDispatch().setKey(key);
 		
+		lsegment.setOwnerPeer(Manager.getInsance().getMePeer());// 设置频道的所属peer节点。
+		lsegment.setName(segmentName);
+		Manager.getInsance().setADThread(lsegment);
 
 	}
 

@@ -243,6 +243,14 @@ public class SettingFrame extends javax.swing.JFrame {
 		jwait.requestFocus();
 		jwait.show();
 
+		tryConnect();
+
+	}
+
+	/**
+	 * 
+	 */
+	private void tryConnect() {
 		// 检查是否有同名peer
 		boolean peerNameIsAvaiable = Manager.getInsance().tryToIdentifyPeerName(userNameLable.getText());
 		boolean segmentNameIsAvaiable = true;
@@ -296,11 +304,12 @@ public class SettingFrame extends javax.swing.JFrame {
 			}
 
 		}
-
 	}
 
 	private void enterRoomPasswordActionPerformed(java.awt.event.ActionEvent evt) {
-		// TODO add your handling code here:
+		// TODO add your handling code here:\
+
+		tryConnect();
 	}
 
 	/**
