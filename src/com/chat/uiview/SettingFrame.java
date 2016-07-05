@@ -1,12 +1,10 @@
 package com.chat.uiview;
 
-import java.awt.FlowLayout;
+import java.util.List;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.text.Segment;
 
 import com.bean.NetworkSegment;
 import com.chat.controll.Manager;
@@ -53,7 +51,7 @@ public class SettingFrame extends javax.swing.JFrame {
 		updateRoomList = new javax.swing.JButton();
 		curRoomList = new javax.swing.JComboBox<>();
 		jLabel7 = new javax.swing.JLabel();
-		userNameLable = new javax.swing.JLabel();
+		userName = new javax.swing.JTextField();
 		jLabel9 = new javax.swing.JLabel();
 		curStatement = new javax.swing.JLabel();
 
@@ -64,11 +62,7 @@ public class SettingFrame extends javax.swing.JFrame {
 
 		jLabel2.setText("名称：");
 
-		newRoomName.setText("jTextField1");
-
 		jLabel3.setText("密码：");
-
-		newRoomPassword.setText("jTextField2");
 
 		newRoomDeclare.setColumns(20);
 		newRoomDeclare.setRows(5);
@@ -88,12 +82,12 @@ public class SettingFrame extends javax.swing.JFrame {
 		jPanel2Layout.setHorizontalGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
 				.addGroup(jPanel2Layout.createSequentialGroup().addGap(6, 6, 6).addComponent(jLabel2)
 						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-						.addComponent(newRoomName, javax.swing.GroupLayout.PREFERRED_SIZE,
-								javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+						.addComponent(newRoomName, javax.swing.GroupLayout.PREFERRED_SIZE, 55,
+								javax.swing.GroupLayout.PREFERRED_SIZE)
 						.addGap(33, 33, 33).addComponent(jLabel3)
 						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(newRoomPassword, javax.swing.GroupLayout.PREFERRED_SIZE,
-								javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+						.addComponent(newRoomPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 77,
+								javax.swing.GroupLayout.PREFERRED_SIZE)
 						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
 								javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(createNewRoomBtn).addContainerGap())
@@ -183,38 +177,32 @@ public class SettingFrame extends javax.swing.JFrame {
 
 		jLabel7.setText("用户名：");
 
-		userNameLable.setText("jLabel8");
-
 		jLabel9.setText("当前状态：");
 
 		curStatement.setText("离线");
 
 		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(
-				layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-						.addGroup(layout.createSequentialGroup()
-								.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-										.addComponent(jTabbedPane1,
-												javax.swing.GroupLayout.Alignment.TRAILING)
-										.addGroup(layout.createSequentialGroup().addContainerGap()
-												.addGroup(layout
-														.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-														.addComponent(jLabel1)
-														.addGroup(layout.createSequentialGroup().addComponent(jLabel7)
-																.addPreferredGap(
-																		javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																.addComponent(userNameLable).addGap(56, 56, 56)
-																.addComponent(jLabel9)
-																.addPreferredGap(
-																		javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-																.addComponent(curStatement)))
-												.addGap(0, 0, Short.MAX_VALUE)))
-								.addContainerGap()));
+		layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+								.addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING).addGroup(layout
+										.createSequentialGroup().addContainerGap()
+										.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+												.addComponent(jLabel1)
+												.addGroup(layout.createSequentialGroup().addComponent(jLabel7)
+														.addPreferredGap(
+																javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+														.addComponent(userName).addGap(56, 56, 56).addComponent(jLabel9)
+														.addPreferredGap(
+																javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+														.addComponent(curStatement)))
+										.addGap(0, 0, Short.MAX_VALUE)))
+						.addContainerGap()));
 		layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout
 				.createSequentialGroup().addContainerGap()
 				.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(jLabel7)
-						.addComponent(userNameLable).addComponent(jLabel9).addComponent(curStatement))
+						.addComponent(userName).addComponent(jLabel9).addComponent(curStatement))
 				.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
 				.addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 24,
 						javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -244,6 +232,7 @@ public class SettingFrame extends javax.swing.JFrame {
 		jwait.show();
 
 		tryConnect();
+		jwait.dispose();
 
 	}
 
@@ -252,12 +241,13 @@ public class SettingFrame extends javax.swing.JFrame {
 	 */
 	private void tryConnect() {
 		// 检查是否有同名peer
-		boolean peerNameIsAvaiable = Manager.getInsance().tryToIdentifyPeerName(userNameLable.getText());
+		boolean peerNameIsAvaiable = Manager.getInsance().tryToIdentifyPeerName(userName.getText());
 		boolean segmentNameIsAvaiable = true;
 		// 检查是否有同名的channel
 		if (newRoomName.getText().length() > 0) {
 
 			segmentNameIsAvaiable = Manager.getInsance().tryToIdentifySegmentName(newRoomName.getText());
+			System.out.println("频道名称：" + newRoomName.getText() + " 能够使用" + segmentNameIsAvaiable);
 
 		}
 
@@ -267,10 +257,11 @@ public class SettingFrame extends javax.swing.JFrame {
 			JOptionPane.showMessageDialog(this, "用户名名称已被使用", "错误", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+
 		if (newRoomName.getText().length() > 0) {
 			if (segmentNameIsAvaiable) {
 				NetworkSegment.createNetworkSegment(newRoomName.getText(), newRoomPassword.getText());
-				dispose();
+				System.out.println("频道创建成功");
 
 			} else {
 				JOptionPane.showMessageDialog(this, "网络段名已被占用", "错误", JOptionPane.ERROR_MESSAGE);
@@ -278,6 +269,7 @@ public class SettingFrame extends javax.swing.JFrame {
 
 		} else {
 			// 用户申请加入其它组
+			System.out.println("用户申请加入其它组");
 
 			String segmentName = (String) curRoomList.getSelectedItem();
 
@@ -307,57 +299,37 @@ public class SettingFrame extends javax.swing.JFrame {
 	}
 
 	private void enterRoomPasswordActionPerformed(java.awt.event.ActionEvent evt) {
-		// TODO add your handling code here:\
 
 		tryConnect();
 	}
 
-	/**
-	 * @param args
-	 *            the command line arguments
+	/*
+	 * 更新显示当前segment列表
+	 * 
+	 * @param pListSegments
 	 */
-	public static void main(String args[]) {
-		/* Set the Nimbus look and feel */
-		// <editor-fold defaultstate="collapsed" desc=" Look and feel setting
-		// code (optional) ">
-		/*
-		 * If Nimbus (introduced in Java SE 6) is not available, stay with the
-		 * default look and feel. For details see
-		 * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.
-		 * html
-		 */
-		try {
-			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-				if ("Nimbus".equals(info.getName())) {
-					javax.swing.UIManager.setLookAndFeel(info.getClassName());
-					break;
-				}
-			}
-		} catch (ClassNotFoundException ex) {
-			java.util.logging.Logger.getLogger(SettingFrame.class.getName()).log(java.util.logging.Level.SEVERE, null,
-					ex);
-		} catch (InstantiationException ex) {
-			java.util.logging.Logger.getLogger(SettingFrame.class.getName()).log(java.util.logging.Level.SEVERE, null,
-					ex);
-		} catch (IllegalAccessException ex) {
-			java.util.logging.Logger.getLogger(SettingFrame.class.getName()).log(java.util.logging.Level.SEVERE, null,
-					ex);
-		} catch (javax.swing.UnsupportedLookAndFeelException ex) {
-			java.util.logging.Logger.getLogger(SettingFrame.class.getName()).log(java.util.logging.Level.SEVERE, null,
-					ex);
-		}
-		// </editor-fold>
-		// </editor-fold>
+	public void updateCurrnetSegmentList(List<String> pListSegments) {
+		comboBoxModel = new SegmentComboBoxModel(pListSegments);
+		System.out.println("更新显示lsit");
 
-		/* Create and display the form */
-		java.awt.EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				new SettingFrame().setVisible(true);
-			}
-		});
 	}
 
-	// Variables declaration - do not modify
+	private class SegmentComboBoxModel extends DefaultComboBoxModel {
+
+		private List<String> segmentList;
+
+		public SegmentComboBoxModel(List<String> pListSegments) {
+			this.segmentList = pListSegments;
+			for (String str : pListSegments) {
+				this.addElement(str);
+			}
+
+		}
+
+	}
+
+	private SegmentComboBoxModel comboBoxModel;
+
 	private javax.swing.JButton createNewRoomBtn;
 	private javax.swing.JComboBox<String> curRoomList;
 	private javax.swing.JLabel curStatement;
@@ -380,6 +352,6 @@ public class SettingFrame extends javax.swing.JFrame {
 	private javax.swing.JTextField newRoomName;
 	private javax.swing.JTextField newRoomPassword;
 	private javax.swing.JButton updateRoomList;
-	private javax.swing.JLabel userNameLable;
+	private javax.swing.JTextField userName;
 	// End of variables declaration
 }

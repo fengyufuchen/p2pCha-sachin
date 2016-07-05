@@ -13,7 +13,7 @@ public class NetworkSegment {
 
 	private String name;
 	private PeerNode ownerPeer;
-	private MainFrame uiFrame;
+
 
 	private List<PeerNode> listPeer = new ArrayList<>();
 	private static Map<String, NetworkSegment> segmentMap = new TreeMap<String, NetworkSegment>();
@@ -48,6 +48,9 @@ public class NetworkSegment {
 
 	public static void createNetworkSegment(String segmentName, String key) {
 		NetworkSegment lsegment = new NetworkSegment(segmentName);
+		
+		segmentMap.put(segmentName, lsegment);
+		
 		//设置该频道的密码：
 		Manager.getInsance().getNetworkDispatch().setKey(key);
 		

@@ -1,24 +1,19 @@
 package com.chat.controll;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.UnknownHostException;
-import java.nio.channels.AcceptPendingException;
-import java.security.Provider.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import javax.swing.text.Segment;
+import javax.swing.JFrame;
 
 import com.bean.NetworkSegment;
 import com.bean.PeerNode;
 import com.chat.msgpacket.ACKServiceMessage;
 import com.chat.msgpacket.Message;
 import com.chat.net.AbstractNetWorkDispatcher;
+import com.chat.net.MultiplyDispatch;
+import com.chat.uiview.MainFrame;
+import com.chat.uiview.SettingFrame;
 
 public class Manager {
 
@@ -26,13 +21,8 @@ public class Manager {
 
 	public static final int DefaultOperTimeOut = 3000;
 	private static final int MAX_RECVFILES_NUM = 50;
-	private static final String DEFAULT_BoradcastGroup = "228.1.1.1";// 组播ip地址
-	private static final int DEFAULT_BROADCASTPORT = 3305;
-	private MulticastSocket mSocket;
-	// 定义一个接收文件的缓冲区
-	private static final int RecvBufSize = 65536;
 
-	private List<NetworkSegment> segmentList = new ArrayList<NetworkSegment>();
+	private List<String> segmentList = new ArrayList<String>();
 
 	private TreeMap<PeerNode, Object> treeShareFilesMap = new TreeMap<>();
 
@@ -44,37 +34,23 @@ public class Manager {
 	private PeerNode mePeer;
 	private boolean segmentNameIsFree;
 	public Object waitObject;
+	private SettingFrame settingFrame;
 
 	private AbstractNetWorkDispatcher networkDispatch;
 
 	public static Manager getInsance() {
-		if (manager == null)
-			manager = new Manager();
-
 		return manager;
 
 	}
 
+	public static void createManager(JFrame frame) {
+		manager = new Manager();
+		manager.settingFrame = (SettingFrame) frame;
+	}
+
 	private Manager() {
-		try {
-			InetAddress addr = InetAddress.getByAddress(DEFAULT_BoradcastGroup.getBytes("UTF-8"));
-			mSocket = new MulticastSocket(DEFAULT_BROADCASTPORT);
-			mSocket.joinGroup(addr);
-
-			// 启动一个线程用于监其他对等节点广播消息
-			BroadcastReceiverThread broadcastReceiver = new BroadcastReceiverThread(mSocket, networkDispatch);
-			broadcastReceiver.start();// 用于接收其他对等结点发送的广播消息
-
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.networkDispatch = new MultiplyDispatch();
+		mePeer = PeerNode.mAnonymous;
 
 	}
 
@@ -97,7 +73,7 @@ public class Manager {
 		if (segmentBoradcastThread != null)
 			segmentBoradcastThread.stop();
 
-		segmentBoradcastThread = new NetworkSegmentBoradcastThread();
+		segmentBoradcastThread = new NetworkSegmentBoradcastThread(curSegment);
 
 		segmentBoradcastThread.start();// 用于定时广播该频道的名称
 
@@ -144,7 +120,7 @@ public class Manager {
 			break;
 		case ACKServiceMessage.peernode_name_used:
 
-			if (!getMePeer().getName().equals(msg.getMsgContent()) && getMePeer().getCurState() == PeerNode.ASK_AUTHO) {
+			if (getMePeer().getCurState() != PeerNode.ASK_AUTHO) {
 				return;
 			}
 			getMePeer().setCurState(PeerNode.NICKNAME_AUTHOFAILED);
@@ -171,7 +147,7 @@ public class Manager {
 
 			break;
 		case ACKServiceMessage.askfor_join:
-			
+
 			if (curSegment == null)
 				reqSegmentName = msg.getMsgContent();
 			if (!curSegment.getName().equals(msg.getMsgContent())) {
@@ -197,8 +173,9 @@ public class Manager {
 				curSegment = new NetworkSegment(reqSegmentName);
 
 				curSegment.addPerrNode(getMePeer());
-				//在这里有两个线层，一个是用于专门负责监听接收广播消息的线程，该线程首先接收到消息然后解密消息，然后是分发处理消息，manger的处理消息的方法就是在这个线程中执行的
-				//另外一个线程是主界面线程。在这里主界面线程有两种情况：1是密码成功，此时会由处理消息的线程主动解锁主线程，2 是密码不配，所以处理线程无法解锁只能等待。为了避免长时间的等待我们使用了带有时间的wait方法
+				// 在这里有两个线层，一个是用于专门负责监听接收广播消息的线程，该线程首先接收到消息然后解密消息，然后是分发处理消息，manger的处理消息的方法就是在这个线程中执行的
+				// 另外一个线程是主界面线程。在这里主界面线程有两种情况：1是密码成功，此时会由处理消息的线程主动解锁主线程，2
+				// 是密码不配，所以处理线程无法解锁只能等待。为了避免长时间的等待我们使用了带有时间的wait方法
 				synchronized (waitObject) {
 					waitObject.notify();
 				}
@@ -220,6 +197,12 @@ public class Manager {
 			break;
 
 		case ACKServiceMessage.chan_avd:
+			if (segmentList.contains(msg.getMsgContent())) {
+				return;
+			} else
+				segmentList.add(msg.getMsgContent());
+			settingFrame.updateCurrnetSegmentList(segmentList);
+
 			break;
 
 		}
@@ -292,36 +275,6 @@ public class Manager {
 				ACKServiceMessage.askfor_join, segmentName);
 
 		Manager.getInsance().getNetworkDispatch().DispatchToAll(ackmsg);
-
-	}
-
-	private class BroadcastReceiverThread extends Thread {
-
-		private MulticastSocket mSocket;// 用于接收数据
-		private AbstractNetWorkDispatcher mDispatcher;// 用于解密数据
-
-		public BroadcastReceiverThread(MulticastSocket pSocket, AbstractNetWorkDispatcher pDispather) {
-			this.mSocket = pSocket;
-			this.mDispatcher = pDispather;
-		}
-
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			super.run();
-			byte[] buffer = new byte[RecvBufSize];
-			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-
-			try {
-				mSocket.receive(packet);
-				mDispatcher.dataReceive(buffer, buffer.length);
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		}
 
 	}
 

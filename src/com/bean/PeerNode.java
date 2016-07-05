@@ -3,7 +3,7 @@ package com.bean;
 import java.io.Serializable;
 
 public class PeerNode implements Serializable, Comparable<PeerNode> {
-	public PeerNode mAnonymous = new PeerNode();
+	public  static PeerNode mAnonymous = new PeerNode();
 
 	private boolean isAnonymous = false;
 	public static final int WIOUTH_AUTHO = 0;

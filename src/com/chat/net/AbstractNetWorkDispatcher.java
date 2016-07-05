@@ -119,6 +119,7 @@ public abstract class AbstractNetWorkDispatcher {
 		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 
 		boolean encData = (keySet && !msg.dontEncrypt());
+		
 
 		if (encData) {
 			// 如果数据已经被加密了，那么久写入一个字节的数据域
@@ -129,7 +130,7 @@ public abstract class AbstractNetWorkDispatcher {
 
 		OutputStream out = bOut;
 		if (encData) {
-			out = new CipherOutputStream(out, encCipher);
+			out = new CipherOutputStream(bOut, encCipher);
 		}
 
 		try {
@@ -137,7 +138,8 @@ public abstract class AbstractNetWorkDispatcher {
 			objOut.writeObject(msg);
 
 			byte[] msgSerializeObj = bOut.toByteArray();
-
+			objOut.close();
+			System.out.println("msgSerializeObj" + msgSerializeObj);
 			DispathcToAll(msgSerializeObj);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -147,38 +149,82 @@ public abstract class AbstractNetWorkDispatcher {
 	}
 
 	public void dataReceive(byte[] byteRecv, int length) {
-
-		if (byteRecv[0] == BLOCK_ENCRYPTED) {
-			if (!keySet) {
-				return;
-			}
-			byte[] outBuffer = new byte[decCipher.getOutputSize(length - 1) + 1];
-			try {
-				length = decCipher.doFinal(byteRecv, 1, length - 1, outBuffer, 1);
-			} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			byteRecv = outBuffer;
-
-		} else if (byteRecv[0] != BLOCK_UNENCRYPTED) {
-			return;
-
-		}
-
-		ByteArrayInputStream bytearrayin = new ByteArrayInputStream(byteRecv);
-
-		try {
-			ObjectInputStream objIn = new ObjectInputStream(bytearrayin);
-			Message msg = (Message) objIn.readObject();
-			bytearrayin.close();
-			Manager.getInsance().dispatchRecevMsg(msg);
-
-		} catch (IOException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		DataReceived(byteRecv,length);
+//		if (byteRecv[0] == BLOCK_ENCRYPTED) {
+//			System.out.println("数据已经被加密了");
+//			if (!keySet) {//仅当传送的数据为key的时候才加密
+//				return;
+//			}
+//			byte[] outBuffer = new byte[decCipher.getOutputSize(length - 1) + 1];
+//			try {
+//				length = decCipher.doFinal(byteRecv, 1, length - 1, outBuffer, 1);
+//			} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			byteRecv = outBuffer;
+//
+//		} else if (byteRecv[0] != BLOCK_UNENCRYPTED) {
+//			return;
+//
+//		}
+//		
+//
+//		ByteArrayInputStream bytearrayin = new ByteArrayInputStream(byteRecv,1,length-1);
+//
+//		try {
+//			ObjectInputStream objIn = new ObjectInputStream(bytearrayin);
+//			Message msg = (Message) objIn.readObject();
+//			System.out.println("msg内容："+msg.getMsgContent());
+//			bytearrayin.close();
+//			Manager.getInsance().dispatchRecevMsg(msg);
+//
+//		} catch (IOException | ClassNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
 	}
+	/**
+     * return_type : void
+     * TODO:接收数据，
+     * @param iBuf，存储数据的缓冲区
+     * @param iLen，接收数据的长度
+     */
+    protected void DataReceived(byte []iBuf,int iLen){
+        try {   
+        	System.out.println("收到消息，开始解密");
+        	//接收加密数据时的处理
+            if(iBuf[0]==BLOCK_ENCRYPTED){
+                if(!keySet)
+                    return;
+                //数据解密过程
+                 byte []outBuf=new byte[decCipher.getOutputSize(iLen-1)+1];
+                 iLen=decCipher.doFinal(iBuf,1,iLen-1,outBuf,1)+1;//解密
+                 iBuf=outBuf;
+            }else if(iBuf[0]!=BLOCK_UNENCRYPTED){
+            	
+                return;
+            }
+            ByteArrayInputStream bIn=new ByteArrayInputStream(iBuf,1,iLen-1);
+            ObjectInputStream ooStream=new ObjectInputStream(bIn);
+            Object msgIn=ooStream.readObject();
+            ooStream.close();
+            Message recMsg=(Message)msgIn;
+            System.out.println("解密过程完毕，开始分发消息");
+            Manager.getInsance().dispatchRecevMsg(recMsg);
+            
+        } 
+        catch(BadPaddingException ex){
+            
+            try {
+                decCipher.init(Cipher.DECRYPT_MODE,secretKey, paramSpec);
+            } catch (Exception exc) {}
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+        
+    }
 
 }

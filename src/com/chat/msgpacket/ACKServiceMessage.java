@@ -1,12 +1,14 @@
 package com.chat.msgpacket;
 
+import java.io.Serializable;
+
 import com.bean.PeerNode;
 
 /**
  * @author lenovo
  * 发送两种消息，一种是广播消息对所有人，一直用是指定了接收者的消息
  */
-public class ACKServiceMessage extends Message {
+public class ACKServiceMessage extends Message   implements Serializable{
 
 	private PeerNode to;
 	private char tag;
