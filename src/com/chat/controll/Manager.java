@@ -113,8 +113,19 @@ public class Manager {
 	}
 
 	private void dealPrivateConManager(PrivateMessage msg) {
-		PrivateConversationContext priConCtx = priConMap.get(msg.getSender());
-		priConCtx.addReceiveMsg(msg.getMsgContent());
+		if (!msg.getMsgReveiver().getName().equals(getMePeer().getName()))
+			return;
+
+		PrivateConversationContext priConCtx = priConMap.get(msg.getSender().getName());
+		if (priConCtx == null) {
+			PrivateConversationContext privateConversationCtx = new PrivateConversationContext(
+					msg.getSender().getName());
+			priConMap.put(msg.getSender().getName(), privateConversationCtx);
+			priConCtx = privateConversationCtx;
+		}
+		String receiverTxt = msg.getSender().getName() + "说：" + msg.getMsgContent();
+
+		priConCtx.addReceiveMsg(receiverTxt);
 
 	}
 
@@ -311,16 +322,30 @@ public class Manager {
 
 	}
 
-	public static void requestEstablishPrivateConver(String peerNodeName) {
+	public static void requestEstablishPrivateConverUIFrame(String peerNodeName) {
 
 		// PrivateConversationFrame privConFrame =
 		// PrivateConversationFrame.CreatePrivateConFrame(peerNodeName);
-		if (priConMap.containsKey(peerNodeName)) {
-			return;
-		}
+		if (!priConMap.containsKey(peerNodeName)) {
+			PrivateConversationContext priConCtx = new PrivateConversationContext(peerNodeName);
+			priConMap.put(peerNodeName, priConCtx);
 
-		PrivateConversationContext priConCtx = new PrivateConversationContext(peerNodeName);
-		priConMap.put(peerNodeName, priConCtx);
+		}
+		PrivateConversationContext priConCtx = priConMap.get(peerNodeName);
+		priConCtx.setConversationUIFrameVisible();
+
+	}
+
+	public static void requestDestoryPrivateConverUIFrame(String peerNodeName) {
+		System.out.println("销毁对话框");
+
+		// PrivateConversationFrame privConFrame =
+		// PrivateConversationFrame.CreatePrivateConFrame(peerNodeName);
+		if (!priConMap.containsKey(peerNodeName)) {
+			return;
+
+		}
+		priConMap.remove(peerNodeName);
 
 	}
 

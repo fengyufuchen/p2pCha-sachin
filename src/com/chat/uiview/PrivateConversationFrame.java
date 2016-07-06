@@ -2,7 +2,12 @@ package com.chat.uiview;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.text.SimpleDateFormat;
+
+import javax.swing.JFrame;
 
 import com.chat.controll.Manager;
 
@@ -57,6 +62,17 @@ public class PrivateConversationFrame extends javax.swing.JFrame {
 		jLabel1.setText("接收到的消息：");
 
 		jLabel2.setText("输入发送消息");
+
+		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		this.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				// TODO Auto-generated method stub
+				Manager.getInsance().requestDestoryPrivateConverUIFrame(getTitle());
+				super.windowClosing(e);
+
+			}
+		});
 
 		privConEditTextArea.addKeyListener(new KeyAdapter() {
 			@Override
@@ -159,6 +175,9 @@ public class PrivateConversationFrame extends javax.swing.JFrame {
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 		msgContent = df.format(System.currentTimeMillis()).trim() + " \n" + msgContent;
+		String sendMsg = "我" + "说：" + msgContent;
+		this.pirvaConRecevTextArea.append(sendMsg);
+		this.privConEditTextArea.setText("");
 
 		Manager.getInsance().sendPrivateConMsg(this.getTitle(), msgContent);
 

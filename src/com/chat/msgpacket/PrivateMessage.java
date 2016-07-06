@@ -19,4 +19,8 @@ public class PrivateMessage extends Message implements Serializable {
 		return 0;
 	}
 
+	public PeerNode getMsgReveiver() {
+		return to;
+	}
+
 }

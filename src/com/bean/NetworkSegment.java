@@ -9,18 +9,18 @@ import java.util.TreeMap;
 import com.chat.controll.Manager;
 import com.chat.uiview.MainFrame;
 
-public class NetworkSegment {
+public class NetworkSegment  {
 
 	private String name;
 	private PeerNode ownerPeer;
 
 	public static List<PeerNode> listPeer = new ArrayList<>();
-	private static Map<String, NetworkSegment> segmentMap = new TreeMap<String, NetworkSegment>();
+	public static Map<String, NetworkSegment> segmentMap = new TreeMap<String, NetworkSegment>();
 
 	public NetworkSegment(String name) {
 		this.name = name;
 		System.out.println("频道名称：" + name);
-
+		segmentMap.put(name, this);
 	}
 
 	public String getName() {
@@ -53,7 +53,7 @@ public class NetworkSegment {
 	public static void createNetworkSegment(String segmentName, String key) {
 		NetworkSegment lsegment = new NetworkSegment(segmentName);
 
-		segmentMap.put(segmentName, lsegment);
+	
 
 		// 设置该频道的密码：
 		Manager.getInsance().getNetworkDispatch().setKey(key);

@@ -59,6 +59,7 @@ public class MainFrame extends javax.swing.JFrame {
 		sendFileMenu = new javax.swing.JMenu();
 		receFileMenu = new javax.swing.JMenu();
 		clearScreen = new javax.swing.JMenu();
+		NoticeTagLable = new javax.swing.JLabel();
 
 		popPeerMenu = new JPopupMenu();
 		// 增加菜单项到菜单上
@@ -99,14 +100,16 @@ public class MainFrame extends javax.swing.JFrame {
 
 		clearScreen.setText("清空屏幕");
 
+		NoticeTagLable.setText("群聊、通知消息：");
+
 		establishPrivConMenuItem.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				System.out.println("单击了发送信息");
-				
-				
+
+				Manager.requestEstablishPrivateConverUIFrame(curToPeerNodeName);
 
 			}
 		});
@@ -124,8 +127,13 @@ public class MainFrame extends javax.swing.JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// TODO Auto-generated method stub
-				System.out.println("发生了单击事件");
-				if ( e.getButton() == MouseEvent.BUTTON3) {
+				Object obj = peerFriendsTree.getLastSelectedPathComponent();
+				if (obj == null)
+					return;
+
+				curToPeerNodeName = peerFriendsTree.getLastSelectedPathComponent().toString();
+				System.out.println("发生了单击事件" + curToPeerNodeName);
+				if (e.getButton() == MouseEvent.BUTTON3) {
 					showPopMenu(e.getX(), e.getY());
 				}
 
@@ -172,28 +180,29 @@ public class MainFrame extends javax.swing.JFrame {
 				.addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup().addContainerGap()
 						.addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
 						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout
-								.createSequentialGroup()
-								.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-										.addComponent(jScrollPane2).addComponent(jScrollPane1,
-												javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE))
-								.addContainerGap())
-								.addComponent(sendMsgBtn, javax.swing.GroupLayout.Alignment.TRAILING))));
-		layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGroup(layout.createSequentialGroup().addContainerGap()
 						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-								.addGroup(layout.createSequentialGroup()
-										.addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 134,
-												javax.swing.GroupLayout.PREFERRED_SIZE)
-										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-										.addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 86,
-												javax.swing.GroupLayout.PREFERRED_SIZE)
-										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-										.addComponent(sendMsgBtn).addContainerGap(12, Short.MAX_VALUE))
+								.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+										.addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 270,
+												Short.MAX_VALUE)
+										.addComponent(jScrollPane1))
+								.addComponent(NoticeTagLable))
+						.addContainerGap()));
+		layout.setVerticalGroup(
+				layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+						.addGroup(layout.createSequentialGroup().addContainerGap().addGroup(layout
+								.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(
+										layout.createSequentialGroup().addComponent(NoticeTagLable).addGap(2, 2, 2)
+												.addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 117,
+														javax.swing.GroupLayout.PREFERRED_SIZE)
+												.addGap(18, 18, 18)
+												.addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 113,
+														javax.swing.GroupLayout.PREFERRED_SIZE)
+												.addContainerGap())
 								.addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0,
 										Short.MAX_VALUE))));
 
 		pack();
+
 	}// </editor-fold>
 
 	private void sendMsgBtnActionPerformed(java.awt.event.ActionEvent evt) {
@@ -268,15 +277,6 @@ public class MainFrame extends javax.swing.JFrame {
 
 	}
 
-	private class PeerNodeTreeModel extends DefaultTreeModel {
-
-		public PeerNodeTreeModel(TreeNode root) {
-			super(root);
-			// TODO Auto-generated constructor stub
-		}
-
-	}
-
 	public void showPopMenu(int x, int y) {
 
 		popPeerMenu.show(peerFriendsTree, x, y);
@@ -284,6 +284,7 @@ public class MainFrame extends javax.swing.JFrame {
 	}
 
 	// Variables declaration - do not modify
+	private javax.swing.JLabel NoticeTagLable;
 	private JPopupMenu popPeerMenu;
 	private javax.swing.JMenu clearScreen;
 	private javax.swing.JEditorPane editSendMSgArea;
@@ -297,5 +298,6 @@ public class MainFrame extends javax.swing.JFrame {
 	private javax.swing.JMenu sendFileMenu;
 	private javax.swing.JButton sendMsgBtn;
 	private javax.swing.JMenu shareDirectoryMenu;
+	private String curToPeerNodeName;
 	// End of variables declaration
 }

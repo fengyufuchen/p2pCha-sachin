@@ -32,9 +32,14 @@ public class PrivateConversationContext {
 	}
 
 	public void addReceiveMsg(String msgContent) {
+		conFrame.setVisible(true);
 
 		conFrame.showReceiveMsg(msgContent);
 
+	}
+
+	public void setConversationUIFrameVisible() {
+		this.conFrame.setVisible(true);
 	}
 
 }
