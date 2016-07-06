@@ -1,5 +1,6 @@
 package com.chat.controll;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,8 @@ import com.bean.PeerNode;
 import com.chat.fun.PrivateConversationContext;
 import com.chat.msgpacket.ACKServiceMessage;
 import com.chat.msgpacket.Message;
-import com.chat.msgpacket.PrivateMessage;
+import com.chat.msgpacket.PrivateConversationMessage;
+import com.chat.msgpacket.PublicSegmentMessage;
 import com.chat.net.AbstractNetWorkDispatcher;
 import com.chat.net.MultiplyDispatch;
 import com.chat.uiview.MainFrame;
@@ -102,17 +104,29 @@ public class Manager {
 	public void dispatchRecevMsg(Message msg) {
 
 		if (msg instanceof ACKServiceMessage) {
-			dealACKServiceManager((ACKServiceMessage) msg);
+			dealACKServiceMessage((ACKServiceMessage) msg);
 
 		}
-		if (msg instanceof PrivateMessage) {
-			dealPrivateConManager((PrivateMessage) msg);
+		if (msg instanceof PrivateConversationMessage) {
+			dealPrivateConMessage((PrivateConversationMessage) msg);
+
+		}
+		if (msg instanceof PublicSegmentMessage) {
+			dealPublicSegmentMessage((PublicSegmentMessage) msg);
 
 		}
 
 	}
 
-	private void dealPrivateConManager(PrivateMessage msg) {
+	private void dealPublicSegmentMessage(PublicSegmentMessage msg) {
+		if (!curSegment.getName().equals(msg.getTargetNetworkSegment().getName()))
+			return;
+
+		this.mainFrame.showReceiveMsg(msg.getMsgContent());
+
+	}
+
+	private void dealPrivateConMessage(PrivateConversationMessage msg) {
 		if (!msg.getMsgReveiver().getName().equals(getMePeer().getName()))
 			return;
 
@@ -129,7 +143,7 @@ public class Manager {
 
 	}
 
-	private void dealACKServiceManager(ACKServiceMessage msg) {
+	private void dealACKServiceMessage(ACKServiceMessage msg) {
 		// 如果当前接收到的消息不是广播并且消息的接收者不是我，那么我应该返回
 		if (!msg.isBroadcast() && !msg.getMsgToPeerNdoe().equals(getMePeer())) {
 			return;
@@ -190,11 +204,14 @@ public class Manager {
 			if (!curSegment.getName().equals(msg.getMsgContent())) {
 				return;
 			}
+
 			ACKServiceMessage ackMsg = new ACKServiceMessage(getMePeer(), ACKServiceMessage.welcome_join,
 					curSegment.getName());
 			System.out.println("发送欢迎加入消息：");
 			curSegment.addPerrNode(msg.getSender());
 			Manager.getInsance().getNetworkDispatch().DispatchToAll(ackMsg);
+			String joinAnnouncement = msg.getSender().getName() + "加入了群聊...";
+			mainFrame.showReceiveMsg(joinAnnouncement);
 
 			if (curSegment.getOwnerPeer().equals(getMePeer())) {
 				// 发现他是segment的创建者
@@ -351,10 +368,26 @@ public class Manager {
 
 	public void sendPrivateConMsg(String toName, String msgContent) {
 		PeerNode peerNode = NetworkSegment.getPeerNodeByName(toName);
-		PrivateMessage priconMsg = new PrivateMessage(Manager.getInsance().getMePeer(), peerNode, msgContent);
+		PrivateConversationMessage priconMsg = new PrivateConversationMessage(Manager.getInsance().getMePeer(),
+				peerNode, msgContent);
 
 		Manager.getInsance().getNetworkDispatch().DispatchToAll(priconMsg);
 
+	}
+
+	/**
+	 * @param tempContent
+	 */
+	public void sendPublicMsg(String tempContent) {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		tempContent = df.format(System.currentTimeMillis()).trim() + " \n" + tempContent;
+		String sendMsgContent = Manager.getInsance().getMePeer().getName() + "说," + tempContent;
+
+		PublicSegmentMessage publicMsg = new PublicSegmentMessage(Manager.getInsance().getCurrentNetworkSegment(),
+				sendMsgContent, Manager.getInsance().getMePeer());
+
+		Manager.getInsance().getNetworkDispatch().DispatchToAll(publicMsg);
 	}
 
 }
