@@ -17,7 +17,7 @@ import com.bean.PeerNode;
 public class PublicSegmentMessage extends Message {
 	private NetworkSegment segment;
 
-	protected PublicSegmentMessage(NetworkSegment segment, String imsg, PeerNode from) {
+	public PublicSegmentMessage(NetworkSegment segment, String imsg, PeerNode from) {
 		super(imsg, from);
 		this.segment = segment;
 
@@ -27,6 +27,10 @@ public class PublicSegmentMessage extends Message {
 	public char getTag() {
 
 		return 0;
+	}
+
+	public NetworkSegment getTargetNetworkSegment() {
+		return this.segment;
 	}
 
 	/**

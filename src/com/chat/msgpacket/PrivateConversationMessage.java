@@ -4,10 +4,10 @@ import java.io.Serializable;
 
 import com.bean.PeerNode;
 
-public class PrivateMessage extends Message implements Serializable {
+public class PrivateConversationMessage extends Message implements Serializable {
 	private PeerNode to;
 
-	public PrivateMessage(PeerNode from, PeerNode to, String imsg) {
+	public PrivateConversationMessage(PeerNode from, PeerNode to, String imsg) {
 		super(imsg, from);
 		// TODO Auto-generated constructor stub
 		this.to = to;

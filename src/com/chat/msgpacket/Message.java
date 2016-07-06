@@ -25,7 +25,7 @@ public abstract class Message implements Serializable {
 
 	}
 
-	protected Message(String imsg, PeerNode from) {
+	public  Message(String imsg, PeerNode from) {
 		msgContent = imsg;
 		this.from = from;
 	}

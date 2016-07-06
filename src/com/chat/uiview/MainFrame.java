@@ -2,8 +2,11 @@ package com.chat.uiview;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -17,6 +20,7 @@ import javax.swing.tree.TreeNode;
 import com.bean.NetworkSegment;
 import com.bean.PeerNode;
 import com.chat.controll.Manager;
+import com.chat.msgpacket.PublicSegmentMessage;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -68,11 +72,27 @@ public class MainFrame extends javax.swing.JFrame {
 		popPeerMenu.add(establishPrivConMenuItem);
 		popPeerMenu.add(lookShareMenuItem);
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+		editSendMSgArea.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				super.keyTyped(e);
 
+				if (e.getKeyChar() == '\n') {
+					String tempContent = editSendMSgArea.getText();
+					Manager.getInsance().sendPublicMsg(tempContent);
+					editSendMSgArea.setText("");
+				}
+
+			}
+
+		});
 		jScrollPane1.setViewportView(editSendMSgArea);
 
 		receMsgScreenArea.setColumns(20);
 		receMsgScreenArea.setRows(5);
+		receMsgScreenArea.setEditable(false);
+
 		jScrollPane2.setViewportView(receMsgScreenArea);
 
 		jScrollPane3.setViewportView(peerFriendsTree);
@@ -280,6 +300,13 @@ public class MainFrame extends javax.swing.JFrame {
 	public void showPopMenu(int x, int y) {
 
 		popPeerMenu.show(peerFriendsTree, x, y);
+
+	}
+
+	public void showReceiveMsg(String msgContent) {
+		// TODO Auto-generated method stub
+
+		receMsgScreenArea.append(msgContent);
 
 	}
 
