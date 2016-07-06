@@ -14,12 +14,12 @@ public class NetworkSegment {
 	private String name;
 	private PeerNode ownerPeer;
 
-
-	private List<PeerNode> listPeer = new ArrayList<>();
+	public static List<PeerNode> listPeer = new ArrayList<>();
 	private static Map<String, NetworkSegment> segmentMap = new TreeMap<String, NetworkSegment>();
 
 	public NetworkSegment(String name) {
 		this.name = name;
+		System.out.println("频道名称：" + name);
 
 	}
 
@@ -27,35 +27,34 @@ public class NetworkSegment {
 		return name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public PeerNode getOwnerPeer() {
 		return ownerPeer;
 	}
 
 	public void setOwnerPeer(PeerNode ownerPeer) {
+		if (this.ownerPeer != null && this.ownerPeer.getName().equals(ownerPeer))
+			return;
+		System.out.println("设置频道的主任" + ownerPeer.getName());
 		this.ownerPeer = ownerPeer;
 	}
 
 	public void addPerrNode(PeerNode peerNode) {
 		if (listPeer.contains(peerNode))
 			return;
-
+		System.out.println("添加对等节点：" + peerNode.getName());
 		this.listPeer.add(peerNode);
 	}
 
 	public static void createNetworkSegment(String segmentName, String key) {
 		NetworkSegment lsegment = new NetworkSegment(segmentName);
-		
+
 		segmentMap.put(segmentName, lsegment);
-		
-		//设置该频道的密码：
+
+		// 设置该频道的密码：
 		Manager.getInsance().getNetworkDispatch().setKey(key);
-		
+
 		lsegment.setOwnerPeer(Manager.getInsance().getMePeer());// 设置频道的所属peer节点。
-		lsegment.setName(segmentName);
+
 		Manager.getInsance().setADThread(lsegment);
 
 	}

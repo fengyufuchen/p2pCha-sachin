@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import com.bean.PeerNode;
 
-public class Message implements Serializable {
+public abstract class Message implements Serializable {
 
 	private String msgContent;
 	private PeerNode from;
@@ -29,6 +29,8 @@ public class Message implements Serializable {
 		msgContent = imsg;
 		this.from = from;
 	}
+	
+	public abstract char getTag();
 
 	
 }

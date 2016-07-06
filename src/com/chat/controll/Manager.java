@@ -12,7 +12,6 @@ import com.chat.msgpacket.ACKServiceMessage;
 import com.chat.msgpacket.Message;
 import com.chat.net.AbstractNetWorkDispatcher;
 import com.chat.net.MultiplyDispatch;
-import com.chat.uiview.MainFrame;
 import com.chat.uiview.SettingFrame;
 
 public class Manager {
@@ -33,7 +32,7 @@ public class Manager {
 
 	private PeerNode mePeer;
 	private boolean segmentNameIsFree;
-	public Object waitObject;
+	public Object waitObject = new Object();
 	private SettingFrame settingFrame;
 
 	private AbstractNetWorkDispatcher networkDispatch;
@@ -147,14 +146,20 @@ public class Manager {
 
 			break;
 		case ACKServiceMessage.askfor_join:
+			System.out.println("收到用户请求加入的消息");
 
-			if (curSegment == null)
+			if (curSegment == null) {
 				reqSegmentName = msg.getMsgContent();
+				return;
+			}
+
 			if (!curSegment.getName().equals(msg.getMsgContent())) {
 				return;
 			}
 			ACKServiceMessage ackMsg = new ACKServiceMessage(getMePeer(), ACKServiceMessage.welcome_join,
 					curSegment.getName());
+			System.out.println("发送欢迎加入消息：");
+			curSegment.addPerrNode(msg.getSender());
 			Manager.getInsance().getNetworkDispatch().DispatchToAll(ackMsg);
 
 			if (curSegment.getOwnerPeer().equals(getMePeer())) {
@@ -163,11 +168,13 @@ public class Manager {
 						curSegment.getName());
 
 				Manager.getInsance().getNetworkDispatch().DispatchToAll(ackmsg);
+				System.out.println("频道主人通知");
 			}
 
 			break;
 
 		case ACKServiceMessage.welcome_join:
+
 			if (curSegment == null && reqSegmentName.length() > 0 && reqSegmentName.equals(msg.getMsgContent())) {
 
 				curSegment = new NetworkSegment(reqSegmentName);

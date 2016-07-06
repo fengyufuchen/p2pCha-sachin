@@ -88,6 +88,7 @@ public class SettingFrame extends javax.swing.JFrame {
 						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
 						.addComponent(newRoomPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 77,
 								javax.swing.GroupLayout.PREFERRED_SIZE)
+
 						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
 								javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(createNewRoomBtn).addContainerGap())
@@ -120,7 +121,6 @@ public class SettingFrame extends javax.swing.JFrame {
 
 		jLabel5.setText("请输入密码：");
 
-		enterRoomPassword.setText("jTextField3");
 		enterRoomPassword.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				enterRoomPasswordActionPerformed(evt);
@@ -136,9 +136,6 @@ public class SettingFrame extends javax.swing.JFrame {
 
 		updateRoomList.setText("更新聊天室");
 
-		curRoomList.setModel(
-				new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
 		javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
 		jPanel3.setLayout(jPanel3Layout);
 		jPanel3Layout.setHorizontalGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -147,8 +144,8 @@ public class SettingFrame extends javax.swing.JFrame {
 						.addGroup(jPanel3Layout.createSequentialGroup().addGap(60, 60, 60).addComponent(updateRoomList))
 						.addGroup(jPanel3Layout.createSequentialGroup().addComponent(jLabel4).addGap(18, 18, 18)
 								.addComponent(jLabel5).addGap(18, 18, 18)
-								.addComponent(enterRoomPassword, javax.swing.GroupLayout.PREFERRED_SIZE,
-										javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+								.addComponent(enterRoomPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 60,
+										javax.swing.GroupLayout.PREFERRED_SIZE)
 								.addGap(18, 18, 18).addComponent(enterSureBtn))
 						.addGroup(jPanel3Layout.createSequentialGroup().addGap(21, 21, 21).addComponent(curRoomList,
 								javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE,
@@ -215,6 +212,7 @@ public class SettingFrame extends javax.swing.JFrame {
 
 	private void enterSureBtnActionPerformed(java.awt.event.ActionEvent evt) {
 		// TODO add your handling code here:
+		tryConnect();
 	}
 
 	private void createNewRoomBtnActionPerformed(java.awt.event.ActionEvent evt) {
@@ -257,11 +255,18 @@ public class SettingFrame extends javax.swing.JFrame {
 			JOptionPane.showMessageDialog(this, "用户名名称已被使用", "错误", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		// 名称可以使用，并且创建了相应的peer
+		NetworkSegment.listPeer.add(Manager.getInsance().getMePeer());
 
-		if (newRoomName.getText().length() > 0) {
+		if (newRoomName.getText() != null && newRoomName.getText().trim().length() > 0) {
 			if (segmentNameIsAvaiable) {
-				NetworkSegment.createNetworkSegment(newRoomName.getText(), newRoomPassword.getText());
+				NetworkSegment.createNetworkSegment(newRoomName.getText().trim(), newRoomPassword.getText().trim());
 				System.out.println("频道创建成功");
+
+				System.out.println("Manager.getInsance().getMePeer()"+Manager.getInsance().getMePeer().getName());
+				NetworkSegment.listPeer.add(Manager.getInsance().getMePeer());
+				
+				
 
 			} else {
 				JOptionPane.showMessageDialog(this, "网络段名已被占用", "错误", JOptionPane.ERROR_MESSAGE);
@@ -269,16 +274,15 @@ public class SettingFrame extends javax.swing.JFrame {
 
 		} else {
 			// 用户申请加入其它组
-			System.out.println("用户申请加入其它组");
 
 			String segmentName = (String) curRoomList.getSelectedItem();
-
+			System.out.println("用户申请加入其它组" + segmentName + " " + enterRoomPassword.getText().trim());
 			Manager.getInsance().requestJoinInNetworkSegemnt(segmentName, enterRoomPassword.getText().trim());
 
 			synchronized (Manager.getInsance().waitObject) {
 				try {
 					try {
-						Manager.getInsance().waitObject.wait(Manager.DefaultOperTimeOut);
+						Manager.getInsance().waitObject.wait(Manager.DefaultOperTimeOut * 4);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -292,7 +296,6 @@ public class SettingFrame extends javax.swing.JFrame {
 			if (Manager.getInsance().getCurrentNetworkSegment() == null) {
 				JOptionPane.showMessageDialog(this, "连接超时", "错误", JOptionPane.ERROR_MESSAGE);
 
-				System.exit(-1);
 			}
 
 		}
@@ -300,7 +303,6 @@ public class SettingFrame extends javax.swing.JFrame {
 
 	private void enterRoomPasswordActionPerformed(java.awt.event.ActionEvent evt) {
 
-		tryConnect();
 	}
 
 	/*
@@ -310,7 +312,7 @@ public class SettingFrame extends javax.swing.JFrame {
 	 */
 	public void updateCurrnetSegmentList(List<String> pListSegments) {
 		comboBoxModel = new SegmentComboBoxModel(pListSegments);
-		System.out.println("更新显示lsit");
+		curRoomList.setModel(comboBoxModel);
 
 	}
 
