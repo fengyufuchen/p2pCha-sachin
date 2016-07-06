@@ -1,15 +1,19 @@
 package com.chat.controll;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import javax.swing.JFrame;
 
 import com.bean.NetworkSegment;
 import com.bean.PeerNode;
+import com.chat.fun.PrivateConversationContext;
 import com.chat.msgpacket.ACKServiceMessage;
 import com.chat.msgpacket.Message;
+import com.chat.msgpacket.PrivateMessage;
 import com.chat.net.AbstractNetWorkDispatcher;
 import com.chat.net.MultiplyDispatch;
 import com.chat.uiview.MainFrame;
@@ -25,6 +29,7 @@ public class Manager {
 	private List<String> segmentList = new ArrayList<String>();
 
 	private TreeMap<PeerNode, Object> treeShareFilesMap = new TreeMap<>();
+	private static Map<String, PrivateConversationContext> priConMap = new HashMap<String, PrivateConversationContext>();
 
 	private NetworkSegment curSegment;
 	private String reqJoinSegmentName;
@@ -44,22 +49,20 @@ public class Manager {
 
 	}
 
-	public static void createManager(JFrame frame) {
-		manager = new Manager();
-		manager.settingFrame = (SettingFrame) frame;
-	}
-
 	private Manager() {
 		this.networkDispatch = new MultiplyDispatch();
 		mePeer = PeerNode.mAnonymous;
 
 	}
 
+	public static void createManager(JFrame frame) {
+		manager = new Manager();
+		manager.settingFrame = (SettingFrame) frame;
+	}
+
 	public PeerNode getMePeer() {
 		return mePeer;
 	}
-
-	
 
 	public NetworkSegment getCurrentNetworkSegment() {
 		return curSegment;
@@ -102,6 +105,16 @@ public class Manager {
 			dealACKServiceManager((ACKServiceMessage) msg);
 
 		}
+		if (msg instanceof PrivateMessage) {
+			dealPrivateConManager((PrivateMessage) msg);
+
+		}
+
+	}
+
+	private void dealPrivateConManager(PrivateMessage msg) {
+		PrivateConversationContext priConCtx = priConMap.get(msg.getSender());
+		priConCtx.addReceiveMsg(msg.getMsgContent());
 
 	}
 
@@ -185,7 +198,8 @@ public class Manager {
 
 		case ACKServiceMessage.welcome_join:
 
-			if (curSegment == null && reqJoinSegmentName.length() > 0 && reqJoinSegmentName.equals(msg.getMsgContent())) {
+			if (curSegment == null && reqJoinSegmentName.length() > 0
+					&& reqJoinSegmentName.equals(msg.getMsgContent())) {
 
 				curSegment = new NetworkSegment(reqJoinSegmentName);
 
@@ -236,8 +250,8 @@ public class Manager {
 
 		PeerNode pPeerNode = new PeerNode(PeerNode.ASK_AUTHO, peerName);
 
-		this.mePeer=pPeerNode;
-				
+		this.mePeer = pPeerNode;
+
 		ACKServiceMessage ackMsg = new ACKServiceMessage(pPeerNode.mAnonymous, ACKServiceMessage.peernode_name,
 				peerName);
 
@@ -294,6 +308,27 @@ public class Manager {
 				ACKServiceMessage.askfor_join, segmentName);
 
 		Manager.getInsance().getNetworkDispatch().DispatchToAll(ackmsg);
+
+	}
+
+	public static void requestEstablishPrivateConver(String peerNodeName) {
+
+		// PrivateConversationFrame privConFrame =
+		// PrivateConversationFrame.CreatePrivateConFrame(peerNodeName);
+		if (priConMap.containsKey(peerNodeName)) {
+			return;
+		}
+
+		PrivateConversationContext priConCtx = new PrivateConversationContext(peerNodeName);
+		priConMap.put(peerNodeName, priConCtx);
+
+	}
+
+	public void sendPrivateConMsg(String toName, String msgContent) {
+		PeerNode peerNode = NetworkSegment.getPeerNodeByName(toName);
+		PrivateMessage priconMsg = new PrivateMessage(Manager.getInsance().getMePeer(), peerNode, msgContent);
+
+		Manager.getInsance().getNetworkDispatch().DispatchToAll(priconMsg);
 
 	}
 

@@ -1,8 +1,15 @@
 package com.chat.uiview;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.List;
 
-import javax.swing.JTree;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -49,10 +56,16 @@ public class MainFrame extends javax.swing.JFrame {
 		sendMsgBtn = new javax.swing.JButton();
 		jMenuBar2 = new javax.swing.JMenuBar();
 		shareDirectoryMenu = new javax.swing.JMenu();
-		sendFileMenu3 = new javax.swing.JMenu();
+		sendFileMenu = new javax.swing.JMenu();
 		receFileMenu = new javax.swing.JMenu();
 		clearScreen = new javax.swing.JMenu();
 
+		popPeerMenu = new JPopupMenu();
+		// 增加菜单项到菜单上
+		JMenuItem establishPrivConMenuItem = new JMenuItem("发送信息");
+		JMenuItem lookShareMenuItem = new JMenuItem("查看共享");
+		popPeerMenu.add(establishPrivConMenuItem);
+		popPeerMenu.add(lookShareMenuItem);
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
 		jScrollPane1.setViewportView(editSendMSgArea);
@@ -78,20 +91,78 @@ public class MainFrame extends javax.swing.JFrame {
 		});
 		jMenuBar2.add(shareDirectoryMenu);
 
-		sendFileMenu3.setText("发送文件");
-		jMenuBar2.add(sendFileMenu3);
+		sendFileMenu.setText("发送文件");
+		jMenuBar2.add(sendFileMenu);
 
 		receFileMenu.setText("接收文件");
 		jMenuBar2.add(receFileMenu);
 
 		clearScreen.setText("清空屏幕");
+
+		establishPrivConMenuItem.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				System.out.println("单击了发送信息");
+				
+				
+
+			}
+		});
+		lookShareMenuItem.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				System.out.println("单击了查看共享文件;");
+			}
+		});
+
+		peerFriendsTree.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// TODO Auto-generated method stub
+				System.out.println("发生了单击事件");
+				if ( e.getButton() == MouseEvent.BUTTON3) {
+					showPopMenu(e.getX(), e.getY());
+				}
+
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
 		clearScreen.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				clearScreenActionPerformed(evt);
 			}
 		});
 		jMenuBar2.add(clearScreen);
-		this.updatePeerNodesTree(NetworkSegment.listPeer);//更新显示当前peer结点
+		this.updatePeerNodesTree(NetworkSegment.listPeer);// 更新显示当前peer结点
 
 		setJMenuBar(jMenuBar2);
 
@@ -185,9 +256,9 @@ public class MainFrame extends javax.swing.JFrame {
 
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode();
 		for (PeerNode peer : peerNodesList) {
-			String peerName=peer.getName();
-			if(peer.getName().equals(Manager.getInsance().getMePeer().getName())){
-				peerName+="(me)";
+			String peerName = peer.getName();
+			if (peer.getName().equals(Manager.getInsance().getMePeer().getName())) {
+				peerName += "(me)";
 			}
 			root.add(new DefaultMutableTreeNode(peerName));
 		}
@@ -206,7 +277,14 @@ public class MainFrame extends javax.swing.JFrame {
 
 	}
 
+	public void showPopMenu(int x, int y) {
+
+		popPeerMenu.show(peerFriendsTree, x, y);
+
+	}
+
 	// Variables declaration - do not modify
+	private JPopupMenu popPeerMenu;
 	private javax.swing.JMenu clearScreen;
 	private javax.swing.JEditorPane editSendMSgArea;
 	private javax.swing.JMenuBar jMenuBar2;
@@ -216,7 +294,7 @@ public class MainFrame extends javax.swing.JFrame {
 	private javax.swing.JTree peerFriendsTree;
 	private javax.swing.JMenu receFileMenu;
 	private javax.swing.JTextArea receMsgScreenArea;
-	private javax.swing.JMenu sendFileMenu3;
+	private javax.swing.JMenu sendFileMenu;
 	private javax.swing.JButton sendMsgBtn;
 	private javax.swing.JMenu shareDirectoryMenu;
 	// End of variables declaration

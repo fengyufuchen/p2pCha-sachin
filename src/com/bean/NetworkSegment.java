@@ -70,5 +70,16 @@ public class NetworkSegment {
 		} else
 			return false;
 	}
+	public static PeerNode getPeerNodeByName(String name) {
+
+		for (PeerNode peer : listPeer) {
+
+			if (peer.getName().equals(name))
+
+				return peer;
+		}
+		return null;
+
+	}
 
 }
