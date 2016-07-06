@@ -256,20 +256,23 @@ public class SettingFrame extends javax.swing.JFrame {
 			return;
 		}
 		// 名称可以使用，并且创建了相应的peer
-		NetworkSegment.listPeer.add(Manager.getInsance().getMePeer());
+		if (!NetworkSegment.listPeer.contains(Manager.getInsance().getMePeer())) {
+			NetworkSegment.addPerrNode(Manager.getInsance().getMePeer());
+		
+		
+
+		}
 
 		if (newRoomName.getText() != null && newRoomName.getText().trim().length() > 0) {
 			if (segmentNameIsAvaiable) {
 				NetworkSegment.createNetworkSegment(newRoomName.getText().trim(), newRoomPassword.getText().trim());
 				System.out.println("频道创建成功");
 
-				System.out.println("Manager.getInsance().getMePeer()"+Manager.getInsance().getMePeer().getName());
-				NetworkSegment.listPeer.add(Manager.getInsance().getMePeer());
-				
-				
+				// System.out.println("Manager.getInsance().getMePeer()"+Manager.getInsance().getMePeer().getName());
 
 			} else {
 				JOptionPane.showMessageDialog(this, "网络段名已被占用", "错误", JOptionPane.ERROR_MESSAGE);
+				return;
 			}
 
 		} else {
@@ -295,10 +298,14 @@ public class SettingFrame extends javax.swing.JFrame {
 			}
 			if (Manager.getInsance().getCurrentNetworkSegment() == null) {
 				JOptionPane.showMessageDialog(this, "连接超时", "错误", JOptionPane.ERROR_MESSAGE);
-
+				return;
 			}
 
 		}
+		// 开启聊天主界面，关闭当前的界面
+		this.dispose();
+		MainFrame.CreateMainFrame(NetworkSegment.listPeer);
+
 	}
 
 	private void enterRoomPasswordActionPerformed(java.awt.event.ActionEvent evt) {

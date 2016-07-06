@@ -12,6 +12,7 @@ import com.chat.msgpacket.ACKServiceMessage;
 import com.chat.msgpacket.Message;
 import com.chat.net.AbstractNetWorkDispatcher;
 import com.chat.net.MultiplyDispatch;
+import com.chat.uiview.MainFrame;
 import com.chat.uiview.SettingFrame;
 
 public class Manager {
@@ -26,7 +27,7 @@ public class Manager {
 	private TreeMap<PeerNode, Object> treeShareFilesMap = new TreeMap<>();
 
 	private NetworkSegment curSegment;
-	private String reqSegmentName;
+	private String reqJoinSegmentName;
 
 	private NetworkSegmentBoradcastThread segmentBoradcastThread;
 
@@ -34,6 +35,7 @@ public class Manager {
 	private boolean segmentNameIsFree;
 	public Object waitObject = new Object();
 	private SettingFrame settingFrame;
+	private MainFrame mainFrame;
 
 	private AbstractNetWorkDispatcher networkDispatch;
 
@@ -57,12 +59,20 @@ public class Manager {
 		return mePeer;
 	}
 
-	public void setMePeer(PeerNode mePeer) {
-		this.mePeer = mePeer;
-	}
+	
 
 	public NetworkSegment getCurrentNetworkSegment() {
 		return curSegment;
+
+	}
+
+	public void setMainFrame(MainFrame pMainFrame) {
+		this.mainFrame = pMainFrame;
+
+	}
+
+	public MainFrame getMainFrame() {
+		return this.mainFrame;
 
 	}
 
@@ -149,7 +159,7 @@ public class Manager {
 			System.out.println("收到用户请求加入的消息");
 
 			if (curSegment == null) {
-				reqSegmentName = msg.getMsgContent();
+				reqJoinSegmentName = msg.getMsgContent();
 				return;
 			}
 
@@ -175,9 +185,9 @@ public class Manager {
 
 		case ACKServiceMessage.welcome_join:
 
-			if (curSegment == null && reqSegmentName.length() > 0 && reqSegmentName.equals(msg.getMsgContent())) {
+			if (curSegment == null && reqJoinSegmentName.length() > 0 && reqJoinSegmentName.equals(msg.getMsgContent())) {
 
-				curSegment = new NetworkSegment(reqSegmentName);
+				curSegment = new NetworkSegment(reqJoinSegmentName);
 
 				curSegment.addPerrNode(getMePeer());
 				// 在这里有两个线层，一个是用于专门负责监听接收广播消息的线程，该线程首先接收到消息然后解密消息，然后是分发处理消息，manger的处理消息的方法就是在这个线程中执行的
@@ -187,11 +197,12 @@ public class Manager {
 					waitObject.notify();
 				}
 
-			} else if (curSegment == null && reqSegmentName.length() < 1)
+			} else if (curSegment == null && reqJoinSegmentName.length() < 1)
 				return;
 
-			curSegment.addPerrNode(msg.getSender());
-			reqSegmentName = "";
+			System.out.println(NetworkSegment.listPeer.contains(msg.getSender()));
+			NetworkSegment.addPerrNode(msg.getSender());
+			reqJoinSegmentName = "";
 
 			break;
 		case ACKServiceMessage.chan_owner:
@@ -225,7 +236,8 @@ public class Manager {
 
 		PeerNode pPeerNode = new PeerNode(PeerNode.ASK_AUTHO, peerName);
 
-		setMePeer(pPeerNode);
+		this.mePeer=pPeerNode;
+				
 		ACKServiceMessage ackMsg = new ACKServiceMessage(pPeerNode.mAnonymous, ACKServiceMessage.peernode_name,
 				peerName);
 

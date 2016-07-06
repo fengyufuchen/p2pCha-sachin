@@ -3,7 +3,7 @@ package com.bean;
 import java.io.Serializable;
 
 public class PeerNode implements Serializable, Comparable<PeerNode> {
-	public  static PeerNode mAnonymous = new PeerNode();
+	public static PeerNode mAnonymous = new PeerNode();
 
 	private boolean isAnonymous = false;
 	public static final int WIOUTH_AUTHO = 0;
@@ -30,7 +30,7 @@ public class PeerNode implements Serializable, Comparable<PeerNode> {
 	public PeerNode() {
 		super();
 		isAnonymous = true;
-		name="???";
+		name = "???";
 	}
 
 	public int getCurState() {
@@ -55,6 +55,13 @@ public class PeerNode implements Serializable, Comparable<PeerNode> {
 		if (o == null)
 			return 0;
 		return this.name.compareTo(o.name);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		// TODO Auto-generated method stub
+		PeerNode pObj=(PeerNode) obj;
+		return pObj.getName().equals(this.getName());
 	}
 
 }

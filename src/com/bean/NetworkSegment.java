@@ -38,11 +38,16 @@ public class NetworkSegment {
 		this.ownerPeer = ownerPeer;
 	}
 
-	public void addPerrNode(PeerNode peerNode) {
+	public static void addPerrNode(PeerNode peerNode) {
 		if (listPeer.contains(peerNode))
 			return;
 		System.out.println("添加对等节点：" + peerNode.getName());
-		this.listPeer.add(peerNode);
+		listPeer.add(peerNode);
+		if (Manager.getInsance().getMainFrame() != null) {
+			Manager.getInsance().getMainFrame().updatePeerNodesTree(listPeer);
+
+		}
+
 	}
 
 	public static void createNetworkSegment(String segmentName, String key) {
