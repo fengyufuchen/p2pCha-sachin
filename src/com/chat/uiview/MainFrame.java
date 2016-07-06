@@ -6,21 +6,19 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.text.SimpleDateFormat;
+import java.io.File;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
+import javax.swing.JFileChooser;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 
 import com.bean.NetworkSegment;
 import com.bean.PeerNode;
 import com.chat.controll.Manager;
-import com.chat.msgpacket.PublicSegmentMessage;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -50,20 +48,57 @@ public class MainFrame extends javax.swing.JFrame {
 	@SuppressWarnings("unchecked")
 	// <editor-fold defaultstate="collapsed" desc="Generated Code">
 	private void initComponents() {
-
+		NoticeTagLable = new javax.swing.JLabel();
 		jScrollPane1 = new javax.swing.JScrollPane();
 		editSendMSgArea = new javax.swing.JEditorPane();
 		jScrollPane2 = new javax.swing.JScrollPane();
 		receMsgScreenArea = new javax.swing.JTextArea();
 		jScrollPane3 = new javax.swing.JScrollPane();
 		peerFriendsTree = new javax.swing.JTree();
-		sendMsgBtn = new javax.swing.JButton();
+	
 		jMenuBar2 = new javax.swing.JMenuBar();
-		shareDirectoryMenu = new javax.swing.JMenu();
-		sendFileMenu = new javax.swing.JMenu();
-		receFileMenu = new javax.swing.JMenu();
-		clearScreen = new javax.swing.JMenu();
-		NoticeTagLable = new javax.swing.JLabel();
+		
+		jScrollPane1.setViewportView(editSendMSgArea);
+		receMsgScreenArea.setColumns(20);
+		receMsgScreenArea.setRows(5);
+		receMsgScreenArea.setEditable(false);
+
+		jScrollPane2.setViewportView(receMsgScreenArea);
+
+		jScrollPane3.setViewportView(peerFriendsTree);
+
+		shareFileMenuItem = new javax.swing.JMenuItem();
+		sendFileMenuItem = new javax.swing.JMenuItem();
+		receiveFileMenuItem = new javax.swing.JMenuItem();
+		clearScreenMenuItem = new javax.swing.JMenuItem();
+
+		FileMenu = new JMenu("文件");
+		// --------------------
+		shareFileMenuItem.setAccelerator(
+				javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.SHIFT_MASK));
+		shareFileMenuItem.setText("共享文件");
+		shareFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				shareFileMenuItemActionPerformed(evt);
+			}
+		});
+		FileMenu.add(shareFileMenuItem);
+
+		sendFileMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, 0));
+		sendFileMenuItem.setText("发送文件");
+		FileMenu.add(sendFileMenuItem);
+
+		receiveFileMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, 0));
+		receiveFileMenuItem.setText("接收文件");
+		FileMenu.add(receiveFileMenuItem);
+
+		clearScreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, 0));
+		clearScreenMenuItem.setText("清空屏幕");
+		FileMenu.add(clearScreenMenuItem);
+
+		jMenuBar2.add(FileMenu);
+		setJMenuBar(jMenuBar2);
+		// --------------------
 
 		popPeerMenu = new JPopupMenu();
 		// 增加菜单项到菜单上
@@ -87,39 +122,9 @@ public class MainFrame extends javax.swing.JFrame {
 			}
 
 		});
-		jScrollPane1.setViewportView(editSendMSgArea);
-
-		receMsgScreenArea.setColumns(20);
-		receMsgScreenArea.setRows(5);
-		receMsgScreenArea.setEditable(false);
-
-		jScrollPane2.setViewportView(receMsgScreenArea);
-
-		jScrollPane3.setViewportView(peerFriendsTree);
-
-		sendMsgBtn.setText("确认发送");
-		sendMsgBtn.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				sendMsgBtnActionPerformed(evt);
-			}
-		});
-
-		shareDirectoryMenu.setText("共享目录·");
-		shareDirectoryMenu.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				shareDirectoryMenuActionPerformed(evt);
-			}
-		});
-		jMenuBar2.add(shareDirectoryMenu);
-
-		sendFileMenu.setText("发送文件");
-		jMenuBar2.add(sendFileMenu);
-
-		receFileMenu.setText("接收文件");
-		jMenuBar2.add(receFileMenu);
-
-		clearScreen.setText("清空屏幕");
-
+		
+		//-----------------
+	
 		NoticeTagLable.setText("群聊、通知消息：");
 
 		establishPrivConMenuItem.addActionListener(new ActionListener() {
@@ -184,15 +189,9 @@ public class MainFrame extends javax.swing.JFrame {
 			}
 		});
 
-		clearScreen.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				clearScreenActionPerformed(evt);
-			}
-		});
-		jMenuBar2.add(clearScreen);
 		this.updatePeerNodesTree(NetworkSegment.listPeer);// 更新显示当前peer结点
 
-		setJMenuBar(jMenuBar2);
+
 
 		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
@@ -225,32 +224,29 @@ public class MainFrame extends javax.swing.JFrame {
 
 	}// </editor-fold>
 
-	private void sendMsgBtnActionPerformed(java.awt.event.ActionEvent evt) {
-		// TODO add your handling code here:
+	
+
+	private void shareFileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
+		JFileChooser shareFileChooser = new javax.swing.JFileChooser();
+		shareFileChooser.setDialogTitle("请选择您共享的目录或文件");
+		shareFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		shareFileChooser.setApproveButtonText("确定");
+		int result = shareFileChooser.showOpenDialog(this);
+		if (result == JFileChooser.APPROVE_OPTION) {
+			File shareFile = shareFileChooser.getSelectedFile();
+
+			System.out.println("共享目录：" + shareFile.getAbsolutePath());
+
+		} else {
+
+		}
+
 	}
 
-	private void shareDirectoryMenuActionPerformed(java.awt.event.ActionEvent evt) {
 
-	}
-
-	private void clearScreenActionPerformed(java.awt.event.ActionEvent evt) {
-		// TODO add your handling code here:
-	}
-
-	/**
-	 * @param args
-	 *            the command line arguments
-	 */
 	public static void CreateMainFrame(List<PeerNode> peerNodesList) {
-		/* Set the Nimbus look and feel */
-		// <editor-fold defaultstate="collapsed" desc=" Look and feel setting
-		// code (optional) ">
-		/*
-		 * If Nimbus (introduced in Java SE 6) is not available, stay with the
-		 * default look and feel. For details see
-		 * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.
-		 * html
-		 */
+		
+		
 		try {
 			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
 				if ("Nimbus".equals(info.getName())) {
@@ -267,9 +263,7 @@ public class MainFrame extends javax.swing.JFrame {
 		} catch (javax.swing.UnsupportedLookAndFeelException ex) {
 			java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
 		}
-		// </editor-fold>
-
-		/* Create and display the form */
+		
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				MainFrame mainFrame = new MainFrame();
@@ -310,21 +304,21 @@ public class MainFrame extends javax.swing.JFrame {
 
 	}
 
-	// Variables declaration - do not modify
+
 	private javax.swing.JLabel NoticeTagLable;
 	private JPopupMenu popPeerMenu;
-	private javax.swing.JMenu clearScreen;
 	private javax.swing.JEditorPane editSendMSgArea;
 	private javax.swing.JMenuBar jMenuBar2;
 	private javax.swing.JScrollPane jScrollPane1;
 	private javax.swing.JScrollPane jScrollPane2;
 	private javax.swing.JScrollPane jScrollPane3;
 	private javax.swing.JTree peerFriendsTree;
-	private javax.swing.JMenu receFileMenu;
 	private javax.swing.JTextArea receMsgScreenArea;
-	private javax.swing.JMenu sendFileMenu;
-	private javax.swing.JButton sendMsgBtn;
-	private javax.swing.JMenu shareDirectoryMenu;
+	private javax.swing.JMenu FileMenu;
 	private String curToPeerNodeName;
-	// End of variables declaration
+	private javax.swing.JMenuItem clearScreenMenuItem;
+	private javax.swing.JMenuItem receiveFileMenuItem;
+	private javax.swing.JMenuItem sendFileMenuItem;
+	private javax.swing.JMenuItem shareFileMenuItem;
+	
 }
